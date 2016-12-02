@@ -1,6 +1,6 @@
 /*
 LeetCode-437-Path Sum III
-23/10/16 09:44:04
+02/12/16 10:45:22
 xuchen
 **/
 
@@ -17,12 +17,13 @@ xuchen
 #include <cmath>
 #include <string>
 #include <algorithm>
-#include <cstring>
 #include <queue>
 #include <list>
 #include <stack>
 #include <bitset>
-using namespace std;
+#include <cstdlib>
+
+const int MAX = 0x3f3f3f3f;
 
 /**
  * Definition for a binary tree node.
@@ -35,38 +36,39 @@ using namespace std;
  */
 class Solution {
 private:
-    
-    void getNFromRoot(TreeNode* root, int sum, int cursum, int &counter)
-    {
-        if(root==NULL)
-            return;
-        
-        cursum += root->val;
-        if(cursum==sum)
-            ++counter;
-        
-        getNFromRoot(root->left, sum, cursum, counter);
-        getNFromRoot(root->right, sum, cursum, counter);
-    }
-    
-    int dfs(TreeNode* root, int sum)
+    int search(TreeNode* root, int cursum, int target, unordered_map<int, int>
+            &prefixMap)
     {
         if(root==NULL)
             return 0;
         
-        int counter = 0;
-        getNFromRoot(root, sum, 0, counter);
+        int res = 0;
+        cursum += root->val;
+        if(prefixMap.find(cursum-target) != prefixMap.end())
+        {
+            res = prefixMap[cursum-target];
+        }
         
-        counter += dfs(root->left, sum);
-        counter += dfs(root->right, sum);
+        if(prefixMap.find(cursum)!=prefixMap.end())
+            prefixMap[cursum]++;
+        else
+            prefixMap[cursum] = 1;
         
-        return counter;
+        res += search(root->left, cursum, target, prefixMap) + 
+            search(root->right, cursum, target, prefixMap);
+        
+        prefixMap[cursum]--;
+        
+        return res;
     }
-
 public:
     int pathSum(TreeNode* root, int sum) {
+        if(root==NULL)
+            return 0;
         
-        return dfs(root, sum);
+        unordered_map<int, int> prefixMap;
+        prefixMap[0] = 1;
         
+        return search(root, 0, sum, prefixMap);
     }
 };
